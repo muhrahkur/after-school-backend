@@ -1,4 +1,3 @@
-
 require("dotenv").config();
 
 const express = require("express");
@@ -20,6 +19,9 @@ const logger = (req, res, next) => {
 // Register middleware
 app.use(logger);
 app.use(express.json());
+
+// Static file middleware for lesson images
+app.use("/images", express.static("images"));
 
 // Test route
 app.get("/", (req, res) => {
