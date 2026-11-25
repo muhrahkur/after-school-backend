@@ -79,6 +79,30 @@ app.post("/orders", async (req, res) => {
     }
 });
 
+// PUT update lesson information
+app.put("/lessons/:id", async (req, res) => {
+    try {
+        const db = getDB();
+
+        const { ObjectId } = require("mongodb");
+
+        const result = await db.collection("lesson").updateOne(
+            { _id: new ObjectId(req.params.id) },
+            { $set: req.body }
+        );
+
+        if (result.matchedCount === 0) {
+            return res.status(404).send("Lesson not found");
+        }
+
+        res.json({ message: "Lesson updated successfully" });
+
+    } catch (error) {
+        console.error("Error updating lesson:", error);
+        res.status(400).send("Invalid lesson ID or update information");
+    }
+});
+
 // Start server after connecting to MongoDB
 async function startServer() {
     try {
