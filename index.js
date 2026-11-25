@@ -43,6 +43,42 @@ app.get("/lessons", async (req, res) => {
     }
 });
 
+// POST new order to MongoDB
+app.post("/orders", async (req, res) => {
+    try {
+        const db = getDB();
+
+        const order = {
+            name: req.body.name,
+            phone: req.body.phone,
+            lessonIDs: req.body.lessonIDs,
+            numberOfSpaces: req.body.numberOfSpaces
+        };
+
+        if (
+            !order.name ||
+            !order.phone ||
+            !Array.isArray(order.lessonIDs) ||
+            !Array.isArray(order.numberOfSpaces) ||
+            order.lessonIDs.length === 0 ||
+            order.lessonIDs.length !== order.numberOfSpaces.length
+        ) {
+            return res.status(400).send("Invalid order information");
+        }
+
+        const result = await db.collection("order").insertOne(order);
+
+        res.status(201).json({
+            message: "Order saved successfully",
+            orderID: result.insertedId
+        });
+
+    } catch (error) {
+        console.error("Error saving order:", error);
+        res.status(500).send("Error saving order");
+    }
+});
+
 // Start server after connecting to MongoDB
 async function startServer() {
     try {
