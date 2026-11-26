@@ -57,6 +57,46 @@ app.get("/lessons", async (req, res) => {
     }
 });
 
+// SEARCH lessons by any field
+app.get("/search", async (req, res) => {
+    try {
+        const db = getDB();
+
+        const searchTerm = req.query.query;
+
+        if (!searchTerm) {
+            return res.status(400).send("Please enter a search term");
+        }
+
+        const searchNumber = Number(searchTerm);
+
+        const searchConditions = [
+            { topic: { $regex: searchTerm, $options: "i" } },
+            { location: { $regex: searchTerm, $options: "i" } },
+            { image: { $regex: searchTerm, $options: "i" } },
+            { icon: { $regex: searchTerm, $options: "i" } }
+        ];
+
+        if (!isNaN(searchNumber)) {
+            searchConditions.push(
+                { price: searchNumber },
+                { space: searchNumber },
+                { rating: searchNumber }
+            );
+        }
+
+        const lessons = await db.collection("lesson")
+            .find({ $or: searchConditions })
+            .toArray();
+
+        res.json(lessons);
+
+    } catch (error) {
+        console.error("Search error:", error);
+        res.status(500).send("Error searching lessons");
+    }
+});
+
 // POST new order to MongoDB
 app.post("/orders", async (req, res) => {
     try {
