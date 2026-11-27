@@ -97,6 +97,81 @@ app.get("/search", async (req, res) => {
     }
 });
 
+
+// GET list of all teachers
+app.get("/teachers", async (req, res) => {
+    try {
+        const db = getDB();
+
+        const teachers = await db.collection("lesson").aggregate([
+            {
+                $group: {
+                    _id: {
+                        firstName: "$teacherFirstname",
+                        lastName: "$teacherLastname"
+                    }
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    firstName: "$_id.firstName",
+                    lastName: "$_id.lastName"
+                }
+            }
+        ]).toArray();
+
+        res.json(teachers);
+
+    } catch (error) {
+        console.error("Error retrieving teachers:", error);
+        res.status(500).send("Error retrieving teachers");
+    }
+});
+
+// GET lessons taught by a specific teacher
+app.get("/teachers/:firstname/:lastname", async (req, res) => {
+    try {
+        const db = getDB();
+
+        const firstName = req.params.firstname;
+        const lastName = req.params.lastname;
+
+        const lessons = await db.collection("lesson").find({
+            teacherFirstname: firstName,
+            teacherLastname: lastName
+        }).toArray();
+
+        res.json(lessons);
+
+    } catch (error) {
+        console.error("Teacher search error:", error);
+        res.status(500).send("Error retrieving teacher lessons");
+    }
+});
+
+
+// GET lessons taught by a specific teacher
+app.get("/teachers/:firstname/:lastname", async (req, res) => {
+    try {
+        const db = getDB();
+
+        const firstName = req.params.firstname;
+        const lastName = req.params.lastname;
+
+        const lessons = await db.collection("lesson").find({
+            teacherFirstName: firstName,
+            teacherLastname: lastName
+        }).toArray();
+
+        res.json(lessons);
+
+    } catch (error) {
+        console.error("Teacher search error:", error);
+        res.status(500).send("Error retrieving teacher lessons");
+    }
+});
+
 // POST new order to MongoDB
 app.post("/orders", async (req, res) => {
     try {
