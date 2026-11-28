@@ -97,7 +97,6 @@ app.get("/search", async (req, res) => {
     }
 });
 
-
 // GET list of all teachers
 app.get("/teachers", async (req, res) => {
     try {
@@ -150,25 +149,37 @@ app.get("/teachers/:firstname/:lastname", async (req, res) => {
     }
 });
 
-
-// GET lessons taught by a specific teacher
-app.get("/teachers/:firstname/:lastname", async (req, res) => {
+// GET number of spaces already purchased for a lesson
+app.get("/enrolment/:lessonid", async (req, res) => {
     try {
         const db = getDB();
 
-        const firstName = req.params.firstname;
-        const lastName = req.params.lastname;
+        const lessonID = req.params.lessonid;
 
-        const lessons = await db.collection("lesson").find({
-            teacherFirstName: firstName,
-            teacherLastname: lastName
+        const orders = await db.collection("order").find({
+            lessonIDs: lessonID
         }).toArray();
 
-        res.json(lessons);
+        let totalEnrolled = 0;
+
+        orders.forEach(order => {
+            const index = order.lessonIDs.indexOf(lessonID);
+
+            if (index !== -1) {
+                totalEnrolled += Number(
+                    order.numberOfSpaces[index]
+                ) || 0;
+            }
+        });
+
+        res.json({
+            lessonID: lessonID,
+            enrolledSpaces: totalEnrolled
+        });
 
     } catch (error) {
-        console.error("Teacher search error:", error);
-        res.status(500).send("Error retrieving teacher lessons");
+        console.error("Enrolment error:", error);
+        res.status(500).send("Error retrieving enrolment information");
     }
 });
 
@@ -248,4 +259,3 @@ async function startServer() {
 }
 
 startServer();
-
